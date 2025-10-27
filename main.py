@@ -20,14 +20,27 @@ EMAIL_CLASS_DESCRIPTIONS = {
 }
 
 class EmailRequest(BaseModel):
-    EmailID: str # Japan GDP
-    TitleDescription: str # Economic growth in Japan slows down as the country experiences a drop in domestic and corporate spending
+    # NOTE: specs say max length should be 100 but this is more than the allowed length in response.
+    EmailID: str = Field(title="ID of the email", max_length=10, examples=["Japan GDP"], min_length=1)
+    TitleDescription: str = Field(
+        title="Email body",
+        max_length=1000,
+        examples=[
+            "Economic growth in Japan slows down as the country experiences a drop in domestic and corporate spending"
+        ])
 
 class EmailClassResponse(BaseModel):
-    EmailID: str
-    ReturnCode: int  #  0/1
+    EmailID: str = Field(title="ID of the email",
+                         max_length=10,
+                         examples=["Japan GDP"],
+                         min_length=1)
+    ReturnCode: int = Field(ge=0, le=1)#  0/1
     EmailClass: int
-    EmailClassDescrip: str
+    EmailClassDescrip: str = Field(
+        title="Human readable name of classification.",
+        max_length=10,
+        examples=["Business", "Sports"],
+        min_length=1)
     ErrorMessage: str | None
 
 
