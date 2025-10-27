@@ -1,8 +1,8 @@
 from typing import Union
 import logging
 
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
 
 logging.basicConfig(level=logging.INFO)
 
@@ -39,8 +39,7 @@ class EmailClassResponse(BaseModel):
     EmailClassDescrip: str = Field(
         title="Human readable name of classification.",
         max_length=10,
-        examples=["Business", "Sports"],
-        min_length=1)
+        examples=["Business", "Sports"])
     ErrorMessage: str | None
 
 
@@ -51,6 +50,13 @@ def read_root():
 
 @app.post("/", operation_id="EmailClassifier")
 def GetEmailClassRequest(email_request: EmailRequest):
+    if len(email_request.TitleDescription) == 0:
+        raise HTTPException(status_code=400, detail=dict(EmailClassResponse(
+        EmailID=email_request.EmailID,
+        ReturnCode=1,
+        EmailClass=0,
+        EmailClassDescrip="",
+        ErrorMessage="Your email was empty.")))
     label = get_classification(email_request.TitleDescription)
     return EmailClassResponse(
         EmailID=email_request.EmailID,
