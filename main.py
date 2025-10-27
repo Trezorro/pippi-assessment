@@ -33,10 +33,10 @@ class EmailClassResponse(BaseModel):
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"Instruction": "Please use this endpoint via POST request with an EmailID and TitleDescription in the request body. Or go to /docs"}
 
 
-@app.post("/EmailClassifier/")
+@app.post("/", operation_id="EmailClassifier")
 def GetEmailClassRequest(email_request: EmailRequest):
     label = get_classification(email_request.TitleDescription)
     return EmailClassResponse(
