@@ -21,7 +21,7 @@ EMAIL_CLASS_DESCRIPTIONS = {
 
 class EmailRequest(BaseModel):
     # NOTE: specs say max length should be 100 but this is more than the allowed length in response.
-    EmailID: str = Field(title="ID of the email", max_length=10, examples=["Japan GDP"], min_length=1)
+    EmailID: str = Field(title="ID of the email", max_length=100, examples=["Japan GDP"], min_length=1)
     TitleDescription: str = Field(
         title="Email body",
         max_length=1000,
@@ -29,9 +29,13 @@ class EmailRequest(BaseModel):
             "Economic growth in Japan slows down as the country experiences a drop in domestic and corporate spending"
         ])
 
+
+class EmailRequestWrapper(BaseModel):
+    EmailRequestData: EmailRequest
+
 class EmailClassResponse(BaseModel):
     EmailID: str = Field(title="ID of the email",
-                         max_length=10,
+                         max_length=100,
                          examples=["Japan GDP"],
                          min_length=1)
     ReturnCode: int = Field(ge=0, le=1)#  0/1
@@ -48,8 +52,10 @@ def read_root():
     return {"Instruction": "Please use this endpoint via POST request with an EmailID and TitleDescription in the request body. Or go to /docs"}
 
 
+
 @app.post("/", operation_id="EmailClassifier")
-def GetEmailClassRequest(email_request: EmailRequest):
+def GetEmailClassRequest(request: EmailRequestWrapper):
+    email_request = request.EmailRequestData
     if len(email_request.TitleDescription) == 0:
         return EmailClassResponse(EmailID=email_request.EmailID,
                                   ReturnCode=1,
@@ -57,15 +63,15 @@ def GetEmailClassRequest(email_request: EmailRequest):
                                   EmailClassDescrip="",
                                   ErrorMessage="Your email was empty.")
     label = get_classification(email_request.TitleDescription)
-    return EmailClassResponse(
+    return {"EmailResponseData": EmailClassResponse(
         EmailID=email_request.EmailID,
         ReturnCode=0,
         EmailClass=label,
         EmailClassDescrip=EMAIL_CLASS_DESCRIPTIONS[label],
-        ErrorMessage=None)
+        ErrorMessage=None)}
 
 
 def get_classification(email: str):
     """Placeholder function for when we have the model."""
-    LOG.info("Email first char number is %d", ord(email[0]))
-    return (ord(email[0]) % 4) + 1
+    LOG.info("Predicting via hash %d", hash(email))
+    return (hash(email) % 4) + 1
