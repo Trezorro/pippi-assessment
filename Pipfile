@@ -8,6 +8,7 @@ fastapi = {extras = ["standard"], version = "*"}
 pipple-template = {file = "data/pipple_template-1.0-py3-none-any.whl"}
 
 [dev-packages]
+pytest = "*"
 
 [requires]
 python_version = "3.11"
